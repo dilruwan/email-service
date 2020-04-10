@@ -39,7 +39,7 @@ npx sequelize-cli db:migrate
 
 - Run the server
 ```
-npm install
+npm start
 ```
    - Server is running at http://localhost:2010
 
