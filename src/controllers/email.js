@@ -1,5 +1,4 @@
 import response from '../response/index';
-import { v4 as uuidv4 } from 'uuid';
 import validator from '../validation/validator';
 import constants from '../constants/appConstants';
 import mailer from '../services/mailer';
@@ -13,9 +12,7 @@ module.exports = {
      * Create email action
      */
     create(req, res) {
-        let uid = uuidv4();
         let data = {
-            uid: uid,
             to: req.body.to,
             subject: req.body.subject,
             content: req.body.content,

@@ -6,6 +6,7 @@ import YAML from "js-yaml";
 import fs from "fs";
 const emailMeta = YAML.load(fs.readFileSync(__dirname + '/../metadata/email.yml'), 'utf8');
 import constants from '../constants/appConstants';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Email Module
@@ -15,6 +16,8 @@ module.exports = {
      * Create email
      */
     create(data) {
+        let uid = uuidv4();
+        data.uid = uid;
         let errors = validator.validate(emailMeta, data);
         if (errors.length) {
             return Promise.reject(response.error(400, errors));
