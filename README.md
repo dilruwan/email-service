@@ -41,7 +41,14 @@ npx sequelize-cli db:migrate
 ```
 npm start
 ```
-   - Server is running at http://localhost:2010
+```
+Server is running at http://localhost:2010
+```
+
+- Run mocha test cases
+```
+npm test
+```
 
 ### Tested on
   - node v12.5.0
@@ -50,7 +57,7 @@ npm start
 ### Sample curl requests
 - Crete email request [POST]
 ```
-curl -d '{"to":"dilruwanwijesinghe@gmail.com","subject":"Test subject","content":"Test content"}' -H 'Content-Type: application/json' http://localhost:2010/v1/emails
+curl -d '{"to":"<VALID-EMAIL-ADDRESS>","subject":"Test subject","content":"Test content"}' -H 'Content-Type: application/json' http://localhost:2010/v1/emails
 ```
 
 - Get the current status of an email [GET]

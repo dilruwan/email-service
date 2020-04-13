@@ -97,7 +97,7 @@ module.exports = {
      */
     isInSydneyPeakTime: function() {
         let currentDateTime = new Date();
-        var sydneyDateTime = moment(currentDateTime).tz("Australia/Sydney").format();
+        let sydneyDateTime = moment(currentDateTime).tz("Australia/Sydney").format();
         let sydneyDate = moment(currentDateTime).tz("Australia/Sydney").format('YYYY-MM-DD');
         let sydneyTimezone = moment(currentDateTime).tz("Australia/Sydney").format('Z');
         let startPeakTime = sydneyDate + 'T08:00:00' + sydneyTimezone;
