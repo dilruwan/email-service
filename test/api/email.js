@@ -4,23 +4,25 @@
  */
 
 import constants from "../../src/constants/appConstants";
+import EmailModule from "../../src/modules/email";
 import should from "should";
-import Email from "../../src/modules/email";
+import sinon from "sinon";
+import { Email } from "../../src/models";
+import { Promise } from "bluebird";
 
-let uid = null;
+let uid = '1fb023b4-b523-42c8-a882-0005ab98e1hr';
 
 describe('Email', function() {
+    let emailCreateStub;
+    let emailFindStub;
+    let emailUpdateStub;
+    let emailDeleteStub;
+
     before(function() {
-        // Create test email
-        let data = {
-            to: 'test@example.com',
-            subject: "Sample subject",
-            content: "Sample content",
-            status: constants.QUEUED
-        };
-        return Email.create(data).then((email) => {
-            uid = email.uid;
-        });
+        emailCreateStub = sinon.stub(Email, 'create');
+        emailFindStub = sinon.stub(Email, 'findOne');
+        emailUpdateStub = sinon.stub(Email, 'update');
+        emailDeleteStub = sinon.stub(Email, 'destroy');
     });
 
     describe('Email create function', function() {
@@ -32,7 +34,14 @@ describe('Email', function() {
                 content: "Sample content",
                 status: constants.QUEUED
             };
-            let result = Email.create(emailData);
+
+            emailCreateStub.returns(Promise.resolve({
+                id: 5,
+                uid: uid,
+                ...emailData
+            }));
+
+            let result = EmailModule.create(emailData);
             return result.should.be.a.Promise();
         });
 
@@ -43,10 +52,16 @@ describe('Email', function() {
                 content: "Sample content",
                 status: constants.QUEUED
             };
-            return Email.create(emailData).then((email) => {
+
+            emailCreateStub.returns(Promise.resolve({
+                id: 5,
+                uid: uid,
+                ...emailData
+            }));
+
+            return EmailModule.create(emailData).then((email) => {
                 email.should.have.property('uid');
             });
-            return result.should.be.a.Promise();
         });
 
         it('should return rejected promise for invalid data - empty to', function () {
@@ -56,7 +71,7 @@ describe('Email', function() {
                 content: 'Sample content',
                 status: constants.QUEUED
             };
-            let result = Email.create(emailData);
+            let result = EmailModule.create(emailData);
             return result.should.be.a.rejected();
         });
 
@@ -67,7 +82,7 @@ describe('Email', function() {
                 content: 'Sample content',
                 status: constants.QUEUED
             };
-            let result = Email.create(emailData);
+            let result = EmailModule.create(emailData);
             return result.should.be.a.rejected();
         });
 
@@ -78,7 +93,7 @@ describe('Email', function() {
                 content: 'Sample content',
                 status: constants.QUEUED
             };
-            let result = Email.create(emailData);
+            let result = EmailModule.create(emailData);
             return result.should.be.a.rejected();
         });
 
@@ -89,7 +104,7 @@ describe('Email', function() {
                 content: '',
                 status: constants.QUEUED
             };
-            let result = Email.create(emailData);
+            let result = EmailModule.create(emailData);
             return result.should.be.a.rejected();
         });
 
@@ -98,12 +113,30 @@ describe('Email', function() {
     describe('Email find function', function() {
 
         it('should return promise for valid uid', function () {
-            let result = Email.find(uid);
+            emailFindStub.withArgs({where: {uid: uid}}).returns(Promise.resolve({
+                id: 5,
+                uid: uid,
+                to: 'test@example.com',
+                subject: "Sample subject",
+                content: "Sample content",
+                status: constants.QUEUED
+            }));
+
+            let result = EmailModule.find(uid);
             return result.should.be.a.Promise();
         });
 
         it('should return email data for valid uid', function () {
-            let result = Email.find(uid).then((email) => {
+            emailFindStub.withArgs({where: {uid: uid}}).returns(Promise.resolve({
+                id: 5,
+                uid: uid,
+                to: 'test@example.com',
+                subject: "Sample subject",
+                content: "Sample content",
+                status: constants.QUEUED
+            }));
+
+            let result = EmailModule.find(uid).then((email) => {
                 email.should.have.property('uid', uid);
                 email.should.have.property('to', 'test@example.com');
                 email.should.have.property('subject', 'Sample subject');
@@ -115,7 +148,8 @@ describe('Email', function() {
 
         it('should return empty email data for not existing uid', function () {
             let notExistingUid = 'not-existing-rv3223cr-32rcx3rc';
-            let result = Email.find(notExistingUid).then((email) => {
+            emailFindStub.withArgs({where: {uid: notExistingUid}}).returns(Promise.resolve());
+            let result = EmailModule.find(notExistingUid).then((email) => {
                 should.equal(email, null);
             });
             return result.should.be.a.Promise();
@@ -123,21 +157,55 @@ describe('Email', function() {
 
         it('should return rejected promise for invalid uid', function () {
             let invalidUid = "@_invalid-346c-4898-8454-fd71b699999";
-            let result = Email.find(invalidUid);
+            let result = EmailModule.find(invalidUid);
             return result.should.be.a.rejected();
         });
 
     });
 
     describe('Email update status function', function() {
-
         it('should update email status to given status', function () {
-            return Email.find(uid).then((email) => {
+            emailFindStub.withArgs({where: {uid: uid}}).returns(Promise.resolve({
+                id: 5,
+                uid: uid,
+                to: 'test@example.com',
+                subject: "Sample subject",
+                content: "Sample content",
+                status: constants.QUEUED
+            }));
+
+            emailUpdateStub.withArgs({
+                status: constants.SENT
+            }, {
+                returning: true,
+                where: {
+                    uid: uid
+                }
+            }).returns(Promise.resolve({
+                id: 5,
+                uid: uid,
+                to: 'test@example.com',
+                subject: "Sample subject",
+                content: "Sample content",
+                status: constants.SENT
+            }));
+
+            return EmailModule.find(uid).then((email) => {
                 email.should.have.property('status', constants.QUEUED);
             }).then(() => {
-                return Email.updateStatus(uid, constants.SENT);
+                return EmailModule.updateStatus(uid, constants.SENT).then((updatedData) => {
+                    updatedData.should.have.property('status', constants.SENT);
+                });
             }).then(() => {
-                return Email.find(uid).then((email) => {
+                emailFindStub.withArgs({where: {uid: uid}}).returns(Promise.resolve({
+                    id: 5,
+                    uid: uid,
+                    to: 'test@example.com',
+                    subject: "Sample subject",
+                    content: "Sample content",
+                    status: constants.SENT
+                }));
+                return EmailModule.find(uid).then((email) => {
                     email.should.have.property('status', constants.SENT);
                 });
             });
@@ -149,23 +217,41 @@ describe('Email', function() {
 
         it('should return rejected promise for invalid uid', function () {
             let invalidUid = "@_invalid-346c-4898-8454-fd71b699999";
-            let result = Email.delete(invalidUid);
+            let result = EmailModule.delete(invalidUid);
             return result.should.be.a.rejected();
         });
 
         it('should return rejected promise for not existing uid', function () {
             let notExistingUid = 'not-existing-rv3223cr-32rcx3rc';
-            let result = Email.delete(notExistingUid);
+            emailFindStub.withArgs({where: {uid: notExistingUid}}).returns(Promise.resolve());
+            let result = EmailModule.delete(notExistingUid);
             return result.should.be.a.rejected();
         });
 
         it('should delete email successfully for valid uid', function () {
-            return Email.find(uid).then((email) => {
+            emailDeleteStub.withArgs({where: {uid: uid}}).returns(Promise.resolve({
+                id: uid,
+                deleted: true
+            }));
+
+            emailFindStub.withArgs({where: {uid: uid}}).returns(Promise.resolve({
+                id: 5,
+                uid: uid,
+                to: 'test@example.com',
+                subject: "Sample subject",
+                content: "Sample content",
+                status: constants.SENT
+            }));
+            return EmailModule.find(uid).then((email) => {
                 email.should.have.property('subject');
             }).then(() => {
-                return Email.delete(uid);
+                return EmailModule.delete(uid).then((deleteResponse) => {
+                    deleteResponse.should.have.property('id', uid);
+                    deleteResponse.should.have.property('deleted', true);
+                });
             }).then(() => {
-                let result = Email.find(uid).then((email) => {
+                emailFindStub.withArgs({where: {uid: uid}}).returns(Promise.resolve());
+                let result = EmailModule.find(uid).then((email) => {
                     should.equal(email, null);
                 });
             });

@@ -46,7 +46,15 @@ module.exports = {
     updateStatus(uid, status) {
         return this.find(uid).then((email) => {
             if (email) {
-                return email.update({status: status});
+                return Email.update(
+                    { status: status },
+                    {
+                        returning: true,
+                        where: {
+                            uid: uid
+                        }
+                    }
+                );
             }
             return email;
         });
@@ -61,7 +69,11 @@ module.exports = {
                     id: email.uid,
                     deleted: true
                 };
-                return email.destroy().then(() => {
+                return Email.destroy({
+                    where: {
+                        uid: uid
+                    }
+                }).then(() => {
                     return result;
                 });
             }

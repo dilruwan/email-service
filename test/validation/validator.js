@@ -1,6 +1,6 @@
 /**
  * Run the test case
- * mocha email-service/test/api/email.js
+ * mocha email-service/test/validation/validator.js
  */
 
 import YAML from "js-yaml";
